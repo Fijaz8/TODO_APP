@@ -5,78 +5,83 @@ import axios from 'axios'
 import TODOLIST from './components/TODOLIST';
 import Insertlist from './components/Insertlist';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+const API = "https://todo-backend-fijaz-b2cuaxfrd4dkcvga.centralindia-01.azurewebsites.net";
+
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [editIndex, setEditIndex] = useState(null); // Store index of the task being edited
-
+  const [editIndex, setEditIndex] = useState(null);
 
   useEffect(()=>{
-  fetchTasks()
+    fetchTasks();
   },[]);
   
-  const fetchTasks = async()=>{
-    await axios.get('http://localhost:5000/todo')
-    .then(
-      Response=>{
-        setTasks(Response.data)
-      }
-    ).catch(eror=>{
-      console.log(eror)
+  const fetchTasks = async ()=>{
+    await axios.get(`${API}/todo`)
+    .then(res => {
+      setTasks(res.data);
     })
+    .catch(error => {
+      console.log(error);
+    });
   };
 
   async function addnote(note) {
     if (editIndex !== null) {
-      // If editing, update the existing task
+
+      // Update existing task
       try {
-        await axios.put("http://localhost:5000/edit",note,{
-          headers:{"Content-Type":"application/json"}
+        await axios.put(`${API}/edit`, note, {
+          headers: { "Content-Type": "application/json" }
         });
-        
-        console.log(`habit updated`);
+        console.log("Task updated");
       } catch (error) {
         console.log(error);
       }
-      
 
       fetchTasks();
-      setEditIndex(null); // Reset edit mode
+      setEditIndex(null);
+    } 
+    else {
+
+      // Create new task
+      try {
+        await axios.post(`${API}/topost`, note, {
+          headers: { "Content-Type": "application/json" }
+        });
+        console.log("New task created");
+        fetchTasks();
+      } catch (error) {
+        console.log(error);
+      }
     }
-    else{
+  }
+
+  async function deletehabit(id){
     try {
-      await axios.post("http://localhost:5000/topost",note,{
-        headers: { "Content-Type": "application/json" }
-    });
-    fetchTasks();
-      console.log(`new habit created  successfully`);
-      
+      await axios.delete(`${API}/todos/${id}`);
+      console.log(`Deleted ID ${id}`);
+      fetchTasks();
     } catch (error) {
       console.log(error);
     }
-    }
-  }
-
-  async  function  deletehabit(id){
-   try {
-    await axios.delete( `http://localhost:5000/todos/${id}`)
-    console.log(`Todo with ID ${id} deleted successfully`);
-    fetchTasks();
-   } catch (error) {
-    console.log(error);
-    
-   }
   }
  
   function handleEdit(index) {
-    setEditIndex(index); // Set the task to edit
+    setEditIndex(index);
   }
   
-
   return (
     <div className="App">
-    <Insertlist onadd={addnote}
-      editTask={editIndex !== null ? tasks[editIndex] : null}/>
-     <TODOLIST tasks={tasks} onDelete={deletehabit} onEdit={handleEdit} />
+      <Insertlist 
+        onadd={addnote}
+        editTask={editIndex !== null ? tasks[editIndex] : null}
+      />
+      <TODOLIST 
+        tasks={tasks} 
+        onDelete={deletehabit} 
+        onEdit={handleEdit} 
+      />
     </div>
   );
 }
