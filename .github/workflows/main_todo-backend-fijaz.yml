@@ -1,5 +1,3 @@
-# Azure Web Apps Deploy - Node.js backend only
-
 name: Build and deploy Node.js backend to Azure Web App - todo-backend-fijaz
 
 on:
