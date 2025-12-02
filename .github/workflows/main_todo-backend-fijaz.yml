@@ -2,16 +2,21 @@ name: Build and deploy Node.js backend to Azure Web App - todo-backend-fijaz
 
 on:
   push:
-    branches: 
+    branches:
       - main
   workflow_dispatch:
+
+# FIX 2: Add permissions for Azure OIDC Login
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -19,26 +24,26 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install backend dependencies
-        working-directory: server
+      - name: Install server dependencies
+        working-directory: server  # FIX 1: Removed 'TODO_APP/'
         run: npm install
 
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-app
-          path: server
+          path: server             # FIX 1: Removed 'TODO_APP/'
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - name: Download backend artifact
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-app
-          path: .
+          path: .                  # Downloads files to current root
 
       - name: Azure Login
         uses: azure/login@v2
@@ -47,7 +52,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B6290233857340ACAB33518CC9234FE2 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6049D5EBCF5F4334997DC1B1ADDF69FF }}
 
-      - name: Deploy backend to Azure Web App
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'todo-backend-fijaz'
