@@ -1,11 +1,3 @@
-name: Build and deploy Node.js backend to Azure Web App - todo-backend-fijaz
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,35 +12,11 @@ jobs:
           node-version: '20.x'
 
       - name: Install server dependencies
-        working-directory: TODO_APP/server
+        working-directory: server  # <--- CHANGED THIS (removed TODO_APP/)
         run: npm install
 
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-app
-          path: TODO_APP/server
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-app
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_ABA4D6DE9760439C923277FC0B2748DE }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B6290233857340ACAB33518CC9234FE2 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6049D5EBCF5F4334997DC1B1ADDF69FF }}
-
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'todo-backend-fijaz'
-          slot-name: 'Production'
-          package: .
+          path: server             # <--- CHANGED THIS (removed TODO_APP/)
